@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>منصة التمثيل بالأعمدة</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:"Tahoma","Arial",sans-serif;
+  background:linear-gradient(135deg,#dff5ff,#f4fff2);
+  color:#102a78;
+}
+
+.platform{
+  width:min(1200px,96%);
+  margin:15px auto;
+  padding:14px;
+  border-radius:30px;
+  background:rgba(255,255,255,.75);
+  box-shadow:0 20px 45px rgba(0,0,0,.15);
+  border:4px solid #d5edf7;
+}
+
+header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.logo{
+  width:72px;
+  height:72px;
+  border-radius:20px;
+  background:white;
+  display:grid;
+  place-items:center;
+  font-size:34px;
+  box-shadow:0 8px 18px rgba(0,0,0,.12);
+}
+
+h1{
+  flex:1;
+  text-align:center;
+  font-size:clamp(2rem,5vw,4rem);
+  margin:0;
+  color:#102a78;
+}
+
+.mascot{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:bold;
+}
+
+.mascot span{
+  background:white;
+  padding:10px;
+  border-radius:16px;
+  box-shadow:0 8px 18px rgba(0,0,0,.12);
+}
+
+.nav{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:15px 0;
+}
+
+.nav button{
+  border:0;
+  padding:10px 16px;
+  border-radius:20px;
+  background:white;
+  color:#102a78;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 5px 12px rgba(0,0,0,.1);
+}
+
+.nav button.active{
+  background:#168de2;
+  color:white;
+}
+
+.page{display:none}
+.page.active{display:block}
+
+.card{
+  background:white;
+  border-radius:25px;
+  padding:16px;
+  box-shadow:0 12px 25px rgba(0,0,0,.12);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1.2fr .8fr .6fr;
+  gap:14px;
+}
+
+.title-pill{
+  width:max-content;
+  margin:0 auto 12px;
+  padding:10px 20px;
+  border-radius:25px;
+  color:white;
+  background:linear-gradient(#3ab0ff,#0876d8);
+  font-weight:bold;
+}
+
+/* المخطط */
+.chart-wrap{
+  display:grid;
+  grid-template-columns:45px 1fr;
+  grid-template-rows:260px auto;
+  gap:0;
+  direction:ltr;
+}
+
+.y-axis{
+  grid-row:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  align-items:center;
+  font-weight:bold;
+  color:#102a78;
+  padding-bottom:4px;
+}
+
+.plot{
+  grid-row:1;
+  height:260px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  align-items:end;
+  padding:0 14px;
+  border-bottom:4px solid #102a78;
+  border-left:4px solid #102a78;
+  background:
+    linear-gradient(to top,
+    transparent 0,
+    transparent calc(20% - 1px),
+    rgba(16,42,120,.18) calc(20% - 1px),
+    rgba(16,42,120,.18) 20%,
+    transparent 20%,
+    transparent calc(40% - 1px),
+    rgba(16,42,120,.18) calc(40% - 1px),
+    rgba(16,42,120,.18) 40%,
+    transparent 40%,
+    transparent calc(60% - 1px),
+    rgba(16,42,120,.18) calc(60% - 1px),
+    rgba(16,42,120,.18) 60%,
+    transparent 60%,
+    transparent calc(80% - 1px),
+    rgba(16,42,120,.18) calc(80% - 1px),
+    rgba(16,42,120,.18) 80%);
+  direction:rtl;
+}
+
+.bar{
+  width:75%;
+  height:calc(var(--v) * 20%);
+  background:linear-gradient(var(--light),var(--color));
+  border-radius:16px 16px 0 0;
+  margin:auto;
+  position:relative;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.bar:hover{
+  transform:scaleX(1.06);
+}
+
+.bar.selected{
+  outline:5px solid rgba(255,220,60,.7);
+}
+
+.value{
+  position:absolute;
+  top:-34px;
+  left:50%;
+  transform:translateX(-50%);
+  background:white;
+  color:#102a78;
+  border:2px solid #d6e8ff;
+  border-radius:15px;
+  padding:4px 10px;
+  font-weight:bold;
+  box-shadow:0 5px 12px rgba(0,0,0,.15);
+}
+
+.labels{
+  grid-column:2;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  text-align:center;
+  font-weight:bold;
+  padding-top:8px;
+  direction:rtl;
+}
+
+.labels span{
+  display:block;
+  font-size:24px;
+}
+
+input[type=range]{
+  width:100%;
+  accent-color:#168de2;
+}
+
+/* السؤال */
+.question{
+  background:#fff0f4;
+  border-radius:22px;
+  padding:18px;
+  text-align:center;
+  font-size:1.5rem;
+  font-weight:bold;
+  margin-bottom:12px;
+}
+
+.choice{
+  width:100%;
+  border:2px solid #aad7ff;
+  background:#eef7ff;
+  border-radius:16px;
+  padding:12px;
+  font-size:1.3rem;
+  font-weight:bold;
+  cursor:pointer;
+  margin-bottom:10px;
+}
+
+.choice.correct{background:#c8ffc0;border-color:#35b83e}
+.choice.wrong{background:#ffd3dc;border-color:#ff4f6a}
+
+/* الأزرار */
+.btn{
+  width:100%;
+  border:0;
+  border-radius:18px;
+  padding:12px;
+  margin-bottom:10px;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  font-size:1rem;
+  box-shadow:inset 0 -4px rgba(0,0,0,.15);
+}
+
+.green{background:linear-gradient(#61d84e,#30a93a)}
+.orange{background:linear-gradient(#ffb24b,#ff7c12)}
+.purple{background:linear-gradient(#b56cff,#873bd7)}
+.blue{background:linear-gradient(#43b1ff,#0871d3)}
+.pink{background:linear-gradient(#ff6f98,#ef2f68)}
+
+.score{
+  background:#f7fbff;
+  border-radius:18px;
+  text-align:center;
+  padding:14px;
+  font-weight:bold;
+}
+
+.score span{
+  display:block;
+  font-size:2rem;
+  color:#0871d3;
+}
+
+/* التمارين */
+.exercise-layout{
+  display:grid;
+  grid-template-columns:1fr 2fr;
+  gap:14px;
+}
+
+.exercise-list button{
+  width:100%;
+  padding:12px;
+  margin-bottom:10px;
+  border-radius:16px;
+  border:2px solid #cde7ff;
+  background:#f8fcff;
+  font-weight:bold;
+  color:#102a78;
+  cursor:pointer;
+}
+
+.exercise-list button.active{
+  border-color:#168de2;
+  background:#e7f5ff;
+}
+
+.exercise-box{
+  display:grid;
+  grid-template-columns:.8fr 1.2fr;
+  gap:14px;
+  align-items:center;
+}
+
+.question-box{
+  background:#f4f9ff;
+  border:2px solid #d7eaff;
+  border-radius:20px;
+  padding:16px;
+  text-align:center;
+}
+
+.answer-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.answer-row button{
+  width:auto;
+  min-width:80px;
+}
+
+/* جرّب بنفسك */
+.practice-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  align-items:center;
+}
+
+.chips{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.chip{
+  width:62px;
+  height:70px;
+  border-radius:16px;
+  display:grid;
+  place-items:center;
+  font-size:2rem;
+  font-weight:bold;
+  cursor:grab;
+  box-shadow:0 6px 14px rgba(0,0,0,.15);
+}
+
+.drop-slot{
+  height:100%;
+  border:3px dashed rgba(53,184,62,.4);
+  display:flex;
+  align-items:end;
+  justify-content:center;
+}
+
+.drop-slot.over{
+  background:#eaffea;
+}
+
+.footer{
+  margin-top:14px;
+  background:#103f91;
+  color:white;
+  text-align:center;
+  padding:12px;
+  border-radius:18px;
+  font-weight:bold;
+}
+
+.toast{
+  position:fixed;
+  top:15px;
+  left:50%;
+  transform:translateX(-50%) translateY(-80px);
+  background:#102a78;
+  color:white;
+  padding:12px 20px;
+  border-radius:16px;
+  font-weight:bold;
+  transition:.25s;
+  z-index:99;
+}
+
+.toast.show{
+  transform:translateX(-50%) translateY(0);
+}
+
+/* الجوال والآيباد */
+@media(max-width:900px){
+  .grid,.exercise-layout,.exercise-box,.practice-grid{
+    grid-template-columns:1fr;
+  }
+
+  .plot,.chart-wrap{
+    height:auto;
+  }
+
+  .plot{
+    height:230px;
+  }
+
+  .chart-wrap{
+    grid-template-rows:230px auto;
+  }
+
+  .platform{
+    width:100%;
+    margin:0;
+    border-radius:0;
+  }
+}
+
+@media(max-width:600px){
+  h1{font-size:2rem}
+  .plot{height:200px;gap:8px;padding:0 8px}
+  .chart-wrap{grid-template-columns:35px 1fr;grid-template-rows:200px auto}
+  .bar{width:85%}
+  .labels{gap:6px;font-size:.8rem}
+  .labels span{font-size:18px}
+  .nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}
+  .nav button{flex:0 0 auto}
+}
+</style>
+</head>
+
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="platform">
+
+<header>
+  <div class="logo">📚</div>
+  <h1>منصة التمثيل بالأعمدة</h1>
+  <div class="mascot">
+    <span>اقرأ العمود<br>ثم اختر القيمة!</span>
+    <div style="font-size:55px">✏️</div>
+  </div>
+</header>
+
+<div class="nav">
+  <button class="active" onclick="showPage('home',this)">الرئيسية</button>
+  <button onclick="showPage('lesson',this)">التطبيق التفاعلي</button>
+  <button onclick="showPage('practice',this)">جرّب بنفسك</button>
+  <button onclick="showPage('exercises',this)">التمارين</button>
+  <button onclick="showPage('feedback',this)">التغذية الراجعة</button>
+  <button onclick="showPage('achievements',this)">الإنجازات</button>
+</div>
+
+<section id="home" class="page active">
+  <div class="card" style="text-align:center">
+    <h2>مرحبًا بك في منصة التمثيل بالأعمدة</h2>
+    <p>تعلّم قراءة الأعمدة، مقارنة القيم، حل التمارين، والحصول على تغذية راجعة فورية.</p>
+    <button class="btn green" onclick="showPage('lesson')">ابدأ التعلم 🚀</button>
+  </div>
+</section>
+
+<section id="lesson" class="page">
+  <div class="grid">
+
+    <div class="card">
+      <div class="title-pill">مخطط يوضح عدد الفواكه 🧺</div>
+      <div class="chart-wrap">
+        <div class="y-axis">
+          <b>٥</b><b>٤</b><b>٣</b><b>٢</b><b>١</b><b>٠</b>
+        </div>
+        <div class="plot" id="mainPlot"></div>
+        <div></div>
+        <div class="labels" id="mainLabels"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="question" id="question">كم عدد الموز؟</div>
+      <div id="choices"></div>
+      <button class="btn pink" onclick="newQuestion()">سؤال جديد 🎲</button>
+    </div>
+
+    <div class="card">
+      <div class="title-pill">أدواتك ⚙️</div>
+      <button class="btn green" onclick="changeValue(1)">+ أضف عمودًا</button>
+      <button class="btn orange" onclick="changeValue(-1)">- أنقص</button>
+      <button class="btn purple" onclick="resetAll()">أعد المحاولة</button>
+      <button class="btn blue" onclick="checkSelected()">تحقّق من الإجابة</button>
+      <div class="score">نقاطك <span id="score">٠</span></div>
+    </div>
+
+  </div>
+</section>
+
+<section id="practice" class="page">
+  <div class="card">
+    <div class="title-pill" style="background:#35b83e">جرّب بنفسك</div>
+    <div class="practice-grid">
+      <div>
+        <div class="chart-wrap">
+          <div class="y-axis">
+            <b>٥</b><b>٤</b><b>٣</b><b>٢</b><b>١</b><b>٠</b>
+          </div>
+          <div class="plot" id="practicePlot"></div>
+          <div></div>
+          <div class="labels" id="practiceLabels"></div>
+        </div>
+      </div>
+
+      <div class="card" style="background:#f1fff0">
+        <h2 style="text-align:center">اسحب البطاقة المناسبة</h2>
+        <p style="text-align:center;font-weight:bold">ضع كل بطاقة فوق الفاكهة المناسبة لبناء الأعمدة.</p>
+        <div class="chips" id="chips"></div>
+        <button class="btn green" onclick="checkPractice()">تحقّق من نشاط السحب 🌟</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="exercises" class="page">
+  <div class="exercise-layout">
+    <div class="card exercise-list" id="exerciseList"></div>
+    <div class="card" id="exerciseStage"></div>
+  </div>
+</section>
+
+<section id="feedback" class="page">
+  <div class="card" style="text-align:center">
+    <h2>⭐ التغذية الراجعة</h2>
+    <p id="feedbackText">ابدأ بحل الأسئلة لتحصل على تغذية راجعة مباشرة.</p>
+  </div>
+</section>
+
+<section id="achievements" class="page">
+  <div class="card" style="text-align:center">
+    <h2>🏆 الإنجازات</h2>
+    <p>النقاط التي حصلت عليها:</p>
+    <h1 id="finalScore">٠</h1>
+  </div>
+</section>
+
+<footer class="footer">
+  أ/ فاطمة هزازي | ملتقى التعليم التفاعلي | ملتقى معلمي ومعلمات الرياضيات
+</footer>
+
+</div>
+
+<script>
+const arabic=["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
+const toArabic=n=>String(n).replace(/\d/g,d=>arabic[d]);
+
+let fruits=[
+  {name:"تفاح",emoji:"🍎",value:4,color:"#ff3f5f",light:"#ff7b92"},
+  {name:"برتقال",emoji:"🍊",value:3,color:"#ff8b20",light:"#ffb65a"},
+  {name:"موز",emoji:"🍌",value:5,color:"#ffca28",light:"#ffe477"},
+  {name:"عنب",emoji:"🍇",value:2,color:"#8d3fe0",light:"#bf7cff"}
+];
+
+let selected=2;
+let qIndex=2;
+let score=0;
+let practice=[0,0,0,0];
+
+function showPage(id,btn){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+  if(btn) btn.classList.add("active");
+  document.getElementById("finalScore").textContent=toArabic(score);
+}
+
+function renderChart(plotId,labelId,practiceMode=false){
+  const plot=document.getElementById(plotId);
+  const labels=document.getElementById(labelId);
+  plot.innerHTML="";
+  labels.innerHTML="";
+
+  fruits.forEach((f,i)=>{
+    let bar=document.createElement("div");
+    bar.className="bar"+(selected===i&&!practiceMode?" selected":"");
+    let value=practiceMode?practice[i]:f.value;
+    bar.style.setProperty("--v",value);
+    bar.style.setProperty("--color",f.color);
+    bar.style.setProperty("--light",f.light);
+
+    if(practiceMode){
+      bar.classList.add("drop-slot");
+      bar.ondragover=e=>{e.preventDefault();bar.classList.add("over")};
+      bar.ondragleave=()=>bar.classList.remove("over");
+      bar.ondrop=e=>{
+        e.preventDefault();
+        bar.classList.remove("over");
+        practice[i]=Number(e.dataTransfer.getData("value"));
+        renderAll();
+        feedback("وضعت البطاقة فوق "+f.name);
+      };
+    }else{
+      bar.innerHTML=`<span class="value">${toArabic(f.value)}</span>`;
+      bar.onclick=()=>{
+        selected=i;
+        feedback("قيمة "+f.name+" هي "+toArabic(f.value));
+        renderAll();
+      };
+    }
+
+    plot.appendChild(bar);
+
+    let label=document.createElement("div");
+    label.innerHTML=`<span>${f.emoji}</span>${f.name}<input type="range" min="0" max="5" value="${f.value}">`;
+    label.querySelector("input").oninput=e=>{
+      fruits[i].value=Number(e.target.value);
+      selected=i;
+      renderAll();
+    };
+    labels.appendChild(label);
+  });
+}
+
+function renderQuestion(){
+  let f=fruits[qIndex];
+  document.getElementById("question").textContent="كم عدد "+f.name+"؟";
+  let box=document.getElementById("choices");
+  box.innerHTML="";
+  let opts=new Set([f.value]);
+  while(opts.size<4) opts.add(Math.floor(Math.random()*6));
+
+  [...opts].sort((a,b)=>a-b).forEach(n=>{
+    let b=document.createElement("button");
+    b.className="choice";
+    b.textContent=toArabic(n);
+    b.onclick=()=>{
+      if(n===f.value){
+        b.classList.add("correct");
+        score+=10;
+        feedback("أحسنت! الإجابة صحيحة.");
+      }else{
+        b.classList.add("wrong");
+        feedback("حاول مرة أخرى واقرأ ارتفاع العمود.");
+      }
+      updateScore();
+    };
+    box.appendChild(b);
+  });
+}
+
+function newQuestion(){
+  qIndex=(qIndex+1)%fruits.length;
+  selected=qIndex;
+  renderAll();
+}
+
+function changeValue(x){
+  fruits[selected].value=Math.max(0,Math.min(5,fruits[selected].value+x));
+  renderAll();
+}
+
+function checkSelected(){
+  score+=5;
+  feedback("العمود المحدد هو "+fruits[selected].name+" وقيمته "+toArabic(fruits[selected].value));
+  updateScore();
+}
+
+function resetAll(){
+  fruits=[
+    {name:"تفاح",emoji:"🍎",value:4,color:"#ff3f5f",light:"#ff7b92"},
+    {name:"برتقال",emoji:"🍊",value:3,color:"#ff8b20",light:"#ffb65a"},
+    {name:"موز",emoji:"🍌",value:5,color:"#ffca28",light:"#ffe477"},
+    {name:"عنب",emoji:"🍇",value:2,color:"#8d3fe0",light:"#bf7cff"}
+  ];
+  practice=[0,0,0,0];
+  score=0;
+  renderAll();
+}
+
+function renderChips(){
+  let chips=document.getElementById("chips");
+  chips.innerHTML="";
+  [1,2,3,4,5].forEach(n=>{
+    let c=document.createElement("div");
+    c.className="chip";
+    c.textContent=toArabic(n);
+    c.style.background="linear-gradient(#ffffff,#9deca2)";
+    c.draggable=true;
+    c.ondragstart=e=>e.dataTransfer.setData("value",n);
+    chips.appendChild(c);
+  });
+}
+
+function checkPractice(){
+  let ok=practice.every((v,i)=>v===fruits[i].value);
+  if(ok){
+    score+=20;
+    feedback("رائع! بنيت الأعمدة بطريقة صحيحة.");
+  }else{
+    feedback("راجع البطاقات، يجب أن تطابق ارتفاع الأعمدة.");
+  }
+  updateScore();
+}
+
+let exercises=[
+  {title:"قراءة قيمة العمود",q:"أي فاكهة عددها ٥؟",answer:"موز",options:["تفاح","برتقال","موز","عنب"]},
+  {title:"أكبر عمود",q:"ما الفاكهة ذات العمود الأطول؟",answer:"موز",options:["تفاح","برتقال","موز","عنب"]},
+  {title:"أصغر عمود",q:"ما الفاكهة ذات العدد الأقل؟",answer:"عنب",options:["تفاح","برتقال","موز","عنب"]},
+  {title:"مقارنة",q:"كم يزيد التفاح عن البرتقال؟",answer:"١",options:["١","٢","٣","٤"]}
+];
+
+let exIndex=0;
+
+function renderExercises(){
+  let list=document.getElementById("exerciseList");
+  let stage=document.getElementById("exerciseStage");
+  list.innerHTML="<div class='title-pill'>التمارين 📝</div>";
+
+  exercises.forEach((e,i)=>{
+    let b=document.createElement("button");
+    b.textContent=(i+1)+". "+e.title;
+    if(i===exIndex)b.classList.add("active");
+    b.onclick=()=>{exIndex=i;renderExercises()};
+    list.appendChild(b);
+  });
+
+  let ex=exercises[exIndex];
+  stage.innerHTML=`
+  <div class="exercise-box">
+    <div class="question-box">
+      <h2>${ex.title}</h2>
+      <p>${ex.q}</p>
+      <div class="answer-row">
+        ${ex.options.map(o=>`<button class="btn blue" onclick="answerExercise('${o}')">${o}</button>`).join("")}
+      </div>
+    </div>
+    <div>
+      <div class="chart-wrap">
+        <div class="y-axis"><b>٥</b><b>٤</b><b>٣</b><b>٢</b><b>١</b><b>٠</b></div>
+        <div class="plot">
+          ${fruits.map(f=>`
+          <div class="bar" style="--v:${f.value};--color:${f.color};--light:${f.light}">
+            <span class="value">${toArabic(f.value)}</span>
+          </div>`).join("")}
+        </div>
+        <div></div>
+        <div class="labels">
+          ${fruits.map(f=>`<div><span>${f.emoji}</span>${f.name}</div>`).join("")}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function answerExercise(ans){
+  let ex=exercises[exIndex];
+  if(ans===ex.answer){
+    score+=15;
+    feedback("إجابة صحيحة! ممتاز.");
+    exIndex=(exIndex+1)%exercises.length;
+  }else{
+    feedback("حاول مرة أخرى، اقرأ المخطط جيدًا.");
+  }
+  updateScore();
+  renderExercises();
+}
+
+function feedback(msg){
+  document.getElementById("feedbackText").textContent=msg;
+  showToast(msg);
+}
+
+function updateScore(){
+  document.getElementById("score").textContent=toArabic(score);
+  document.getElementById("finalScore").textContent=toArabic(score);
+}
+
+function showToast(msg){
+  let t=document.getElementById("toast");
+  t.textContent=msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),1600);
+}
+
+function renderAll(){
+  renderChart("mainPlot","mainLabels",false);
+  renderChart("practicePlot","practiceLabels",true);
+  renderQuestion();
+  renderChips();
+  renderExercises();
+  updateScore();
+}
+
+renderAll();
+</script>
+
+</body>
+</html>
